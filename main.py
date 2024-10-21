@@ -19,17 +19,13 @@ normalize = transforms.Normalize(
 )
 
 train_transform = transforms.Compose([
-    transforms.Resize(256),  # 短い方の辺を256に
-    transforms.CenterCrop(224),  # 辺の長さが224の正方形を中央から切り抜く
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    normalize,
 ])
 
 test_transform = transforms.Compose([
-    transforms.Resize(256),  # 短い方の辺を256に
-    transforms.CenterCrop(224),  # 辺の長さが224の正方形を中央から切り抜く
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    normalize,
 ])
 
 train_dataset = datasets.CIFAR10(
@@ -48,13 +44,13 @@ test_dataset = datasets.CIFAR10(
 
 train_loader = DataLoader(
     train_dataset,
-    batch_size=32,
+    batch_size=128,
     shuffle=True,
 )
 
 test_loader = DataLoader(
     test_dataset,
-    batch_size=32,
+    batch_size=128,
     shuffle=False,
 )
 
@@ -78,9 +74,11 @@ class AlexNet(nn.Module):
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.BatchNorm2d(64),
             nn.Conv2d(64, 192, kernel_size=5, padding=2),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.BatchNorm2d(192),
             nn.Conv2d(192, 384, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(384, 256, kernel_size=3, padding=1),
@@ -88,43 +86,33 @@ class AlexNet(nn.Module):
             nn.Conv2d(256, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.BatchNorm2d(256),
         )
-        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.classifier = nn.Sequential(
-            nn.Dropout(p=0.3),
-            nn.Linear(256 * 6 * 6, 4096),
+            nn.Dropout(p=0.5),
+            nn.Linear(256 * 4 * 4, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3),
-            nn.Linear(4096, 1024),
+            nn.Dropout(p=0.5),
+            nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            nn.Linear(1024, num_classes),
+            nn.Linear(4096, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.features(x)
-        x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
 
 num_classes = 10
-num_epochs = 10
+num_epochs = 100
 
-#model=AlexNet(num_classes)
-model = models.alexnet(pretrained=True)
-
-for param in model.parameters():
-    param.requires_grad = False
-
-# 一部の層を入れ替え（デフォルトで訓練可能）
-model.classifier[1] = nn.Linear(9216,4096)
-model.classifier[4] = nn.Linear(4096,1024)
-model.classifier[6] = nn.Linear(1024,10)
+model=AlexNet(num_classes)
 
 loss_func = F.cross_entropy
 optimizer = optim.Adam(model.parameters())
 
-torchinfo.summary(model, (1, 3, 224, 224))
+torchinfo.summary(model, (1, 3, 32, 32))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
