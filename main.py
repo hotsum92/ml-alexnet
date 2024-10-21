@@ -17,6 +17,13 @@ normalize = transforms.Normalize(
 )
 
 train_transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomCrop(32, padding=4),
+    transforms.ColorJitter(
+        brightness=0.2,
+        contrast=0.2,
+        saturation=0.2,
+    ),
     transforms.ToTensor(),
     normalize,
 ])
@@ -85,10 +92,10 @@ class AlexNet(nn.Module):
         )
         self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.classifier = nn.Sequential(
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=0.3),
             nn.Linear(256 * 6 * 6, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=0.3),
             nn.Linear(4096, 1024),
             nn.ReLU(inplace=True),
             nn.Linear(1024, num_classes),
