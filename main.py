@@ -10,6 +10,8 @@ from torchvision import datasets, transforms
 import torchsummary
 import torchinfo
 from matplotlib import pyplot as plt
+import torchvision.models as models
+
 
 normalize = transforms.Normalize(
     mean=[0.4914, 0.4822, 0.4465],
@@ -17,20 +19,17 @@ normalize = transforms.Normalize(
 )
 
 train_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop(32, padding=4),
-    transforms.ColorJitter(
-        brightness=0.2,
-        contrast=0.2,
-        saturation=0.2,
-    ),
+    transforms.Resize(256),  # 短い方の辺を256に
+    transforms.CenterCrop(224),  # 辺の長さが224の正方形を中央から切り抜く
     transforms.ToTensor(),
-    normalize,
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
 test_transform = transforms.Compose([
+    transforms.Resize(256),  # 短い方の辺を256に
+    transforms.CenterCrop(224),  # 辺の長さが224の正方形を中央から切り抜く
     transforms.ToTensor(),
-    normalize,
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
 train_dataset = datasets.CIFAR10(
@@ -109,13 +108,23 @@ class AlexNet(nn.Module):
         return x
 
 num_classes = 10
-num_epochs = 50
+num_epochs = 10
 
-model=AlexNet(num_classes)
+#model=AlexNet(num_classes)
+model = models.alexnet(pretrained=True)
+
+for param in model.parameters():
+    param.requires_grad = False
+
+# 一部の層を入れ替え（デフォルトで訓練可能）
+model.classifier[1] = nn.Linear(9216,4096)
+model.classifier[4] = nn.Linear(4096,1024)
+model.classifier[6] = nn.Linear(1024,10)
+
 loss_func = F.cross_entropy
 optimizer = optim.Adam(model.parameters())
 
-torchinfo.summary(model, (1, 3, 32, 32))
+torchinfo.summary(model, (1, 3, 224, 224))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
