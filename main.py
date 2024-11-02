@@ -1,22 +1,23 @@
-import torch
 from torch import optim
 from torch.utils.data import DataLoader
-import torchvision
 import torchvision.transforms as transforms
 import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 from torchvision import datasets, transforms
-import torchsummary
 import torchinfo
 from matplotlib import pyplot as plt
 import torchvision.models as models
 from alexnet import AlexNet
 from train import train_eval
+import sys
 
-image_size = 32
-batch_size = 128
-num_epochs = 100
+#image_size = 32
+image_size = sys.args[0]
+#batch_size = 128
+batch_size = sys.args[1]
+#num_epochs = 100
+num_epochs = sys.args[2]
 
 num_classes = 10
 
