@@ -14,6 +14,17 @@ import torchvision.models as models
 from alexnet import AlexNet
 from train import train_eval
 
+num_classes = 10
+image_size = 32
+num_epochs = 100
+
+model=AlexNet(num_classes)
+
+torchinfo.summary(model, (1, 3, image_size, image_size))
+
+loss_func = F.cross_entropy
+optimizer = optim.Adam(model.parameters())
+
 normalize = transforms.Normalize(
     mean=[0.4914, 0.4822, 0.4465],
     std=[0.2470, 0.2435, 0.2616],
@@ -61,17 +72,5 @@ test_loader = DataLoader(
     batch_size=128,
     shuffle=False,
 )
-
-num_classes = 10
-num_epochs = 100
-
-model=AlexNet(num_classes)
-
-loss_func = F.cross_entropy
-optimizer = optim.Adam(model.parameters())
-
-torchinfo.summary(model, (1, 3, 32, 32))
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimizer)

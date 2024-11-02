@@ -44,6 +44,8 @@ def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimize
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    model.to(device)
+
     train_losses = []
     train_accuracies = []
     val_losses = []
