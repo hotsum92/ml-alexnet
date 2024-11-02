@@ -14,9 +14,11 @@ import torchvision.models as models
 from alexnet import AlexNet
 from train import train_eval
 
-num_classes = 10
 image_size = 32
+batch_size = 128
 num_epochs = 100
+
+num_classes = 10
 
 model=AlexNet(num_classes)
 
@@ -31,13 +33,6 @@ normalize = transforms.Normalize(
 )
 
 train_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop(32, padding=4),
-    transforms.ColorJitter(
-        brightness=0.2,
-        contrast=0.2,
-        saturation=0.2,
-    ),
     transforms.ToTensor(),
     normalize,
 ])
@@ -63,13 +58,13 @@ test_dataset = datasets.CIFAR10(
 
 train_loader = DataLoader(
     train_dataset,
-    batch_size=128,
+    batch_size=batch_size
     shuffle=True,
 )
 
 test_loader = DataLoader(
     test_dataset,
-    batch_size=128,
+    batch_size=batch_size,
     shuffle=False,
 )
 
