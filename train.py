@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import torch
-
+import time
+import datetime
 
 def evaluate(data_loader, model, loss_func):
 
@@ -42,6 +43,13 @@ def evaluate(data_loader, model, loss_func):
 
 def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimizer):
 
+    now = datetime.datetime.now()
+    now_str = now.strftime('%Y%m%d%H%M%S')
+    name = f"{type(model).__name__}_{now_str}"
+
+    with open(f"{name}.csv", 'a') as f:
+        print("name,epoch,time,loss,accuracy", file=f)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model.to(device)
@@ -50,6 +58,8 @@ def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimize
     train_accuracies = []
     val_losses = []
     val_accuracies = []
+
+    start = time.time()
 
     for epoch in range(num_epochs):
         model.train()
@@ -75,19 +85,28 @@ def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimize
             total_loss += loss.item()
             total_accuracy += accuracy.item()
 
-        avg_train_loss = total_loss / len(train_loader)
-        avg_train_accuracy = total_accuracy / len(train_loader)
+        train_loss = total_loss / len(train_loader)
+        train_accuracy = total_accuracy / len(train_loader)
+
+        with open(f"{name}.csv", 'a') as f:
+            print(f"{name}-train,{epoch + 1},{time.time() - start},{train_loss},{train_accuracy}", file=f)
 
         val_loss, val_accuracy = evaluate(test_loader, model, loss_func)
 
+        end = time.time()
+
         print(
             f"Epoch: {epoch + 1}/{num_epochs}, "
-            f"  Train: Loss {avg_train_loss:.3f}, Accuracy: {avg_train_accuracy:.3f}, "
+            f"  Time: {end - start:.2f}s, "
+            f"  Train: Loss {train_loss:.3f}, Accuracy: {train_accuracy:.3f}, "
             f"  Validation: Loss {val_loss:.3f}, Accuracy: {val_accuracy:.3f}"
         )
 
-        train_losses.append(avg_train_loss)
-        train_accuracies.append(avg_train_accuracy)
+        with open(f"{name}.csv", 'a') as f:
+            print(f"{name}-eval,{epoch + 1},{end - start},{val_loss},{val_accuracy}", file=f)
+
+        train_losses.append(train_loss)
+        train_accuracies.append(train_accuracy)
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
 
@@ -108,5 +127,5 @@ def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimize
     plt.title("Accuracy vs Epochs")
     plt.legend()
 
-    plt.savefig("loss_accuracy.png")
+    plt.savefig(f"{name}.png")
 
