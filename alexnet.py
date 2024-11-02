@@ -3,7 +3,7 @@ import torch
 class AlexNet(torch.nn.Module):
     def __init__(self, num_classes):
         super().__init__()
-        self.features = nn.Sequential(
+        self.features = torch.nn.Sequential(
             torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             torch.nn.ReLU(inplace=True),
             torch.nn.MaxPool2d(kernel_size=2, stride=2),
@@ -21,7 +21,7 @@ class AlexNet(torch.nn.Module):
             torch.nn.MaxPool2d(kernel_size=2, stride=2),
             torch.nn.BatchNorm2d(256),
         )
-        self.classifier = nn.Sequential(
+        self.classifier = torch.nn.Sequential(
             torch.nn.Dropout(p=0.5),
             torch.nn.Linear(256 * 4 * 4, 4096),
             torch.nn.ReLU(inplace=True),
