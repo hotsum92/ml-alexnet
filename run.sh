@@ -1,1 +1,1 @@
-parallel --progress python main.py ::: 32 ::: 10 20 50 100 ::: 50
+parallel --progress -j 2 python main.py ::: 32 ::: 50 100 10 20 ::: 50

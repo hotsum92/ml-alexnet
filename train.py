@@ -90,7 +90,7 @@ def train_eval(prefix, model, num_epochs, train_loader, test_loader, loss_func, 
         train_accuracy = total_accuracy / len(train_loader)
 
         with open(log, 'a') as f:
-            print(f"{name}-train,{epoch + 1},{time.time() - start},{train_loss},{train_accuracy}", file=f)
+            print(f"{name}-train,{epoch + 1},{time.time() - start:.2f},{train_loss},{train_accuracy}", file=f)
 
         val_loss, val_accuracy = evaluate(test_loader, model, loss_func)
 
@@ -104,7 +104,7 @@ def train_eval(prefix, model, num_epochs, train_loader, test_loader, loss_func, 
         )
 
         with open(log, 'a') as f:
-            print(f"{name}-eval,{epoch + 1},{end - start},{val_loss},{val_accuracy}", file=f)
+            print(f"{name}-eval,{epoch + 1},{end - start:.2f},{val_loss},{val_accuracy}", file=f)
 
         train_losses.append(train_loss)
         train_accuracies.append(train_accuracy)
