@@ -41,13 +41,14 @@ def evaluate(data_loader, model, loss_func):
 
     return average_loss, accuracy
 
-def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimizer):
+def train_eval(prefix, model, num_epochs, train_loader, test_loader, loss_func, optimizer):
 
     now = datetime.datetime.now()
     now_str = now.strftime('%Y%m%d%H%M%S')
-    name = f"{type(model).__name__}_{now_str}"
+    name = f"{type(model).__name__}_{prefix}"
+    log = f"{name}_{now_str}.csv"
 
-    with open(f"{name}.csv", 'a') as f:
+    with open(log, 'a') as f:
         print("name,epoch,time,loss,accuracy", file=f)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -88,7 +89,7 @@ def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimize
         train_loss = total_loss / len(train_loader)
         train_accuracy = total_accuracy / len(train_loader)
 
-        with open(f"{name}.csv", 'a') as f:
+        with open(log, 'a') as f:
             print(f"{name}-train,{epoch + 1},{time.time() - start},{train_loss},{train_accuracy}", file=f)
 
         val_loss, val_accuracy = evaluate(test_loader, model, loss_func)
@@ -102,7 +103,7 @@ def train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimize
             f"  Validation: Loss {val_loss:.3f}, Accuracy: {val_accuracy:.3f}"
         )
 
-        with open(f"{name}.csv", 'a') as f:
+        with open(log, 'a') as f:
             print(f"{name}-eval,{epoch + 1},{end - start},{val_loss},{val_accuracy}", file=f)
 
         train_losses.append(train_loss)

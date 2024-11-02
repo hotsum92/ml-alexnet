@@ -13,11 +13,11 @@ from train import train_eval
 import sys
 
 #image_size = 32
-image_size = sys.args[0]
-#batch_size = 128
-batch_size = sys.args[1]
+image_size = int(sys.argv[1])
+#batch_size = 100
+batch_size = int(sys.argv[2])
 #num_epochs = 100
-num_epochs = sys.args[2]
+num_epochs = int(sys.argv[3])
 
 num_classes = 10
 
@@ -59,14 +59,18 @@ test_dataset = datasets.CIFAR10(
 
 train_loader = DataLoader(
     train_dataset,
-    batch_size=batch_size
+    batch_size,
     shuffle=True,
 )
 
+print("train_loader", len(train_loader))
+
 test_loader = DataLoader(
     test_dataset,
-    batch_size=batch_size,
+    batch_size,
     shuffle=False,
 )
 
-train_eval(model, num_epochs, train_loader, test_loader, loss_func, optimizer)
+print("test_loader", len(test_loader))
+
+train_eval(f"i{image_size}b{batch_size}", model, num_epochs, train_loader, test_loader, loss_func, optimizer)
